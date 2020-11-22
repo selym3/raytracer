@@ -67,19 +67,22 @@ Color trace(
         return Color(2); 
     }
     
-    Ray shadowRay(finalCollision.hit, light - finalCollision.hit);
+    // cast a ray from the shadow to the light source and see if anything 
+    // is in its way
+    Ray shadowRay(finalCollision.hit, light  - finalCollision.hit);
     double shadeValue = 1;
 
     for (const auto& sphere : spheres) {
         if (&sphere != sphereHit) {
-            if (sphere.intersect(shadowRay).intersected) {
+            auto coll = sphere.intersect(shadowRay); 
+            if (coll.intersected) {
                 shadeValue = 0;
                 break; // don't compute any cool shading yet
             }
         }
     }
 
-    return sphereHit->color();// * shadeValue;
+    return sphereHit->color() * shadeValue;
 }
 
 struct Projection {
@@ -99,7 +102,7 @@ struct Orthographic : public Projection {
     Ray projectRay(int x, int y) const 
     {
         return Ray(
-            Vec3(x - (width>>1), y - (height>>1), 0), 
+            Vec3(x - (width>>1),y - (height>>1), 0), 
             Vec3(0,0,-1).normalized()
         );
     }
@@ -157,30 +160,31 @@ int main(void)
     // );
     // CenterWindow(window);
 
+    //Does not work with sizes over this
     constexpr int WIDTH  = 600;
     constexpr int HEIGHT = 600;
 
     std::vector<Sphere> spheres({
         // WITH MERCATOR:
-        Sphere(Vec3( 0, 0, -500), 4, Color(1, 0, 0)),
-        Sphere(Vec3( 4, 0, -5), 4, Color(0, 1, 0)),
-        Sphere(Vec3( 0, 4, -50), 4, Color(0, 0, 1))
+        Sphere(Vec3( 0, -2.5, -30), 4, Color(1, 0, 0)),
+        Sphere(Vec3( 0, 0, -60), 12, Color(0, 1, 0)),
+        // Sphere(Vec3( 0, 0, -60), 16, Color(0, 0, 1))
     });
 
-    const Projection& eye = Orthographic(WIDTH, HEIGHT);
-    // const Projection& eye = Perspective(45.0, WIDTH, HEIGHT);
+    // const Projection& eye = Orthographic(WIDTH, HEIGHT);
+    const Projection& eye = Perspective(45.0, WIDTH, HEIGHT);
     // static std::array<Color, WIDTH * HEIGHT> pixels;
     std::vector<Color> pixels;
     pixels.resize(WIDTH * HEIGHT);
     int ptr = 0;
-    const Vec3 light( WIDTH>>1, 300, -30);
+    const Vec3 light(WIDTH>>1, 300, -5);
 
     for (int i = 0; i < WIDTH; ++i) {
 
         for (int j = 0; j < HEIGHT; ++j, ++ptr) {
             
             // projection
-            auto primary = eye.projectRay(i, j);
+            auto primary = eye.projectRay(j, i);
         
             // get the pixel
             pixels[ptr] = trace(spheres, primary, light);
