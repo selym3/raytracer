@@ -15,11 +15,16 @@ RayIntersection Sphere::intersect(const Ray& in) const
     auto d2 = l.dot(l) - tca * tca;
     if (d2 > radius * radius) return RayIntersection();
     auto thc = std::sqrt(radius * radius - d2);
+    
+    auto t0 = tca - thc;
+    auto t1 = tca + thc;
+    if (t0 < t1) t0 = t1;
+
+    auto hit = in.sample(t0);
     return RayIntersection(
-        *this,
-        in,
-        tca - thc,
-        tca + thc
+        hit, 
+        (hit - m_origin).normalized(), 
+        t0
     );
 }
 
