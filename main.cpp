@@ -1,6 +1,6 @@
+#include "./engine/PPM_Engine.hpp"
 #include "./raytracing/Sphere.hpp"
-#include "engine/PPM_Engine.hpp"
-
+#include <iostream>
 int main(void)
 {
     constexpr int WIDTH  = 300;
