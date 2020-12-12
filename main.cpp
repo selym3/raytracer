@@ -1,12 +1,16 @@
 #include "./engine/PPM_Engine.hpp"
+#include "./engine/SFML_Engine.hpp"
 #include "./raytracing/Sphere.hpp"
 #include <iostream>
+
+
 int main(void)
 {
-    constexpr int WIDTH  = 300;
+    constexpr int WIDTH  = 600;
     constexpr int HEIGHT = 300;
 
     using EngineType = PPM_Engine;
+    // using EngineType = SFML_Engine;
 
     EngineType engine{
         WIDTH,
