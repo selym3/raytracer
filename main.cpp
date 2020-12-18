@@ -1,20 +1,33 @@
+#include "./engine/projections/Camera.hpp"
+#include "./engine/projections/Orthographic.hpp"
+#include "./engine/projections/Perspective.hpp"
+#include "./engine/projections/Projection.hpp"
+
 #include "./engine/PPM_Engine.hpp"
 #include "./engine/SFML_Engine.hpp"
 #include "./raytracing/Sphere.hpp"
+
 #include <iostream>
 
 
 int main(void)
 {
-    constexpr int WIDTH  = 600;
-    constexpr int HEIGHT = 300;
+    constexpr int WIDTH  = 1000;
+    constexpr int HEIGHT = 1000;
 
-    using EngineType = PPM_Engine;
-    // using EngineType = SFML_Engine;
+    // using EngineType = PPM_Engine;
+    using EngineType = SFML_Engine;
 
-    EngineType engine{
+    EngineType engine {
         WIDTH,
-        HEIGHT
+        HEIGHT,
+        Camera(
+            Perspective(
+                35, 
+                WIDTH, 
+                HEIGHT
+            )
+        )
     };
 
     engine

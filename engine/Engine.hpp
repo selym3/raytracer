@@ -4,21 +4,13 @@
 #include <memory>
 #include <vector>
 
-#include "./projections/Projection.hpp"
-#include "./projections/Perspective.hpp"
-#include "./projections/Orthographic.hpp"
+#include "./projections/Camera.hpp"
 
 #include "../raytracing/Sphere.hpp"
-
-#include "../raytracing/Shape.hpp"
+// #include "../raytracing/Shape.hpp"
 
 struct Engine
 {
-    // using Projector = Perspective;
-
-    // std::unique_ptr<Projection> rayProjector;
-
-    using ProjectorType = Perspective;
     using ShapeType = Sphere;
     using Light = Vec3;
 
@@ -26,24 +18,19 @@ struct Engine
         int width, 
         int height, 
         Light light,
-        ProjectorType prj
+        Camera camera
     );
-
-    Engine& addShape(ShapeType shape);
-
-    void clearShapes();
-
     virtual ~Engine()=default;
 
+    Engine& addShape(ShapeType shape);
+    void clearShapes();
+
     virtual bool isRunning() const = 0;
-    
     virtual void execute() = 0;
 
 protected:
 
     using ShapeContainer = std::vector<ShapeType>;
-
-    ProjectorType projector;
     ShapeContainer shapes; 
 
 protected:
@@ -52,10 +39,11 @@ protected:
 
 protected:
 
+    Camera camera;
+
     Light light;
 
-    Color backgroundColor = 1;
-
+    Color backgroundColor = Vec3(1,1,1);
     Color trace(const Ray& in) const;
 
 };

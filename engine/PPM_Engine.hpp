@@ -3,6 +3,8 @@
 
 #include "./Engine.hpp"
 
+#include "./projections/Camera.hpp"
+
 #include <cmath>
 #include <iostream>
 #include <fstream> 
@@ -12,7 +14,7 @@
 struct PPM_Engine : public Engine 
 {
 
-    PPM_Engine(int width, int height, unsigned int toProduce=1);
+    PPM_Engine(int width, int height, Camera camera, unsigned int toProduce=1);
     ~PPM_Engine()=default;
 
     bool isRunning() const override;

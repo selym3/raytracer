@@ -25,12 +25,12 @@ static std::vector<PPM_Engine::File> getOutputFiles(
     return out;
 }
 
-PPM_Engine::PPM_Engine(int w, int h, unsigned int toProduce) : 
+PPM_Engine::PPM_Engine(int w, int h, Camera camera, unsigned int toProduce) : 
     Engine(
         w,
         h, 
         Engine::Light(w>>1, 300, -5), 
-        Perspective(120, w, h)
+        camera
     ),
     toProduce { toProduce },
     files { getOutputFiles(toProduce, PPM_Engine::NUM_EXPECTED) }
@@ -53,7 +53,7 @@ void PPM_Engine::execute()
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
         
-            auto primaryRay = this->projector.project(x, y);
+            auto primaryRay = this->camera.project(x, y);
 
             auto color = this->trace(primaryRay);
 

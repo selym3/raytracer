@@ -1,34 +1,24 @@
-/**
- * Needs implementation
- * 
- * Check README.md for implementation
- */
-
 #ifndef __CAMERA_HPP__
 #define __CAMERA_HPP__
 
-#include <memory>
-
 #include "./Projection.hpp"
-#include "./Perspective.hpp"
 
-struct Camera : public Projection
+struct Camera
 {
-    using ProjectorType = std::unique_ptr<Projection>;
-
-    Camera(ProjectorType realProjection);
+    Camera(Projection projector);
     ~Camera()=default;
 
-    Ray project(int x, int y) const override;
+    Ray project(int x, int y) const;
+    // Ray operator()(int x, int y) const;
 
-private:
+public:
 
     /*
     Transation & Rotation
     */
 
     Vec3 translation;
-    // need information for 3d rotation
+    double pitch, yaw, roll;
 
 private:
 
@@ -36,9 +26,7 @@ private:
     Projection storage
     */
 
-    ProjectorType interalProjection;
-
-
+    Projection projection;
 
 };
 

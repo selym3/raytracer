@@ -1,11 +1,11 @@
 #include "../../engine/SFML_Engine.hpp"
 
-SFML_Engine::SFML_Engine(int w, int h) : 
+SFML_Engine::SFML_Engine(int w, int h, Camera camera) : 
     Engine(
         w, 
         h, 
         Engine::Light(w>>1, 300, -5),
-        Perspective(120, w, h)
+        camera
     ),
     window(
         sf::VideoMode(w, h),
@@ -50,7 +50,7 @@ void SFML_Engine::execute()
 
         for (int x = 0; x < width; ++x) {
         
-            auto primaryRay = this->projector.project(x, y);
+            auto primaryRay = this->camera.project(x, y);
 
             auto color = this->trace(primaryRay);
 

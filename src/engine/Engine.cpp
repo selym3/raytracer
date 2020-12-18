@@ -4,10 +4,10 @@ Engine::Engine(
     int width, 
     int height, 
     Light light,
-    Engine::ProjectorType prj
+    Camera camera
 ) : width { width },
     height { height },
-    projector { prj },
+    camera { camera },
     light { light }
 {
 }
