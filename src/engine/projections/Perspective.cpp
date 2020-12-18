@@ -9,7 +9,7 @@ Perspective::Perspective(double fov, int width, int height) :
 {
 }
 
-Ray Perspective::project(int x, int y) const
+Ray Perspective::operator()(int x, int y) const
 {
     return Ray(
         Vec3(0),

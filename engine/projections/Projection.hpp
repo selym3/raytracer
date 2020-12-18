@@ -3,11 +3,8 @@
 
 #include "../../raytracing/Ray.hpp"
 
-struct Projection {
-    virtual ~Projection()=default;
+#include <functional>
 
-    // The ray direction should be normalized 
-    virtual Ray project(int x, int y) const = 0;
-};
+using Projection = std::function<Ray(int, int)>;
 
 #endif

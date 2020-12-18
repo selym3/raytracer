@@ -3,12 +3,12 @@
 
 #include "./Projection.hpp"
 
-struct Perspective : public Projection {
+struct Perspective {
 
     Perspective(double fov, int width, int height);
     ~Perspective()=default;
 
-    Ray project(int x, int y) const;
+    Ray operator()(int x, int y) const;
 
 private:
     double inverseWidth;

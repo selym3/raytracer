@@ -3,12 +3,12 @@
 
 #include "./Projection.hpp"
 
-struct Orthographic : public Projection {
+struct Orthographic {
 
     Orthographic(int width, int height);
     ~Orthographic()=default;
 
-    Ray project(int x, int y) const;
+    Ray operator()(int x, int y) const;
 
 private:
     int width, height;

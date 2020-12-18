@@ -2,7 +2,7 @@
 
 Orthographic::Orthographic(int w, int h) : width{w}, height{h} {}
 
-Ray Orthographic::project(int x, int y) const
+Ray Orthographic::operator()(int x, int y) const
 {
     return Ray(
         Vec3(x - (width >> 1), y - (height >> 1), 0),
