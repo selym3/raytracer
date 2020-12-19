@@ -6,10 +6,12 @@
 struct Camera
 {
     Camera(Projection projector);
+    Camera(Projection projector, Vec3 translation);
+    Camera(Projection projector, double y, double p, double r);
+    Camera(Projection projector, Vec3 translation, double y, double p, double r);
     ~Camera()=default;
 
     Ray project(int x, int y) const;
-    // Ray operator()(int x, int y) const;
 
 public:
 
@@ -18,8 +20,8 @@ public:
     */
 
     Vec3 translation;
-    double pitch, yaw, roll;
-
+    double yaw, pitch, roll; 
+    
 private:
 
     /*

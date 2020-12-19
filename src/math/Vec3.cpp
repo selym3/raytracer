@@ -29,3 +29,38 @@ double Vec3::mag() const
     return std::sqrt(distSqr);
 }
 Vec3 Vec3::normalized() const { return (*this) / mag(); }
+
+double to_radians(double degrees) { return degrees * M_PI / 180.0; }
+double to_degrees(double radians) { return radians * 180.0 / M_PI; }
+
+Vec3 Vec3::rotate(double yaw, double pitch, double roll, Vec3 around) const
+{
+    yaw = to_radians(yaw);
+    roll = to_radians(roll);
+    pitch = to_radians(pitch);
+
+    Vec3 out = *this - around;
+    
+    // rotate around the z axis
+    out = Vec3(
+        out.x * std::cos(yaw) - out.y * std::sin(yaw),
+        out.x * std::sin(yaw) + out.y * std::cos(yaw),
+        out.z
+    );
+
+    // rotate around the y axis
+    out = Vec3(
+        out.x * std::cos(pitch) + out.z * std::cos(pitch),
+        out.y,
+        -out.x * std::sin(pitch) + out.z * std::cos(pitch)
+    );
+
+    // rotate around the x axis
+    out = Vec3(
+        out.x,
+        out.y * std::cos(roll) - out.z * std::sin(roll),
+        out.y * std::sin(roll) + out.z * std::cos(roll)
+    );
+
+    return out += around;
+}
