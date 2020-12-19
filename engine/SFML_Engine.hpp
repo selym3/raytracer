@@ -9,6 +9,7 @@ struct SFML_Engine : public Engine
 {
 
     SFML_Engine(int width, int height, Camera projector);
+    SFML_Engine(int width, int height, Camera projector, int rowsPerThread);
     ~SFML_Engine()=default;
 
     bool isRunning() const override;
@@ -16,6 +17,7 @@ struct SFML_Engine : public Engine
 
 private:
 
+    int rowsPerThread;
     sf::RenderWindow window;
 
 };

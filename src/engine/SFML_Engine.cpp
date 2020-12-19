@@ -1,17 +1,26 @@
 #include "../../engine/SFML_Engine.hpp"
 
-SFML_Engine::SFML_Engine(int w, int h, Camera camera) : 
+#include <cmath>
+#include <thread>
+
+SFML_Engine::SFML_Engine(int w, int h, Camera camera, int rowsPerThread) : 
     Engine(
         w, 
         h, 
-        Engine::Light(w>>1, 300, -5),
+        Engine::Light(0, 0, 5),
         camera
     ),
     window(
         sf::VideoMode(w, h),
         "Raytracer Engine",
         sf::Style::None
-    )
+    ),
+    rowsPerThread { rowsPerThread }
+{
+}
+
+SFML_Engine::SFML_Engine(int w, int h, Camera camera) :
+    SFML_Engine(w, h, camera, w)
 {
 }
 
@@ -20,8 +29,12 @@ bool SFML_Engine::isRunning() const
     return window.isOpen();
 }
 
+#include <iostream>
+
 void SFML_Engine::execute() 
 {
+
+    // TODO: add a timer
 
     sf::Event event;
     while (window.pollEvent(event)) 
@@ -32,41 +45,68 @@ void SFML_Engine::execute()
 
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+    auto getKey = [](sf::Keyboard::Key a) {
+        return sf::Keyboard::isKeyPressed(a);
+    };
+
+    if (getKey(sf::Keyboard::Escape))
         window.close();
+
+    if (getKey(sf::Keyboard::Space)) {
+        std::cout << camera.translation.x << ", " << camera.translation.y << ", " << camera.translation.z << "\n";
+        std::cout << camera.yaw << ", " << camera.pitch << ", " << camera.roll << "\n";
+        std::cout << "---\n";
+    }
+
+
+    // camera movement 
+    // auto isMoving = (getKey(sf::Keyboard::W) - getKey(sf::Keyboard::S));
+    // camera.translation.z += 1;
+
+    // rotating
+    camera.pitch += 0.9 * (getKey(sf::Keyboard::A) - getKey(sf::Keyboard::D));
 
     window.clear(sf::Color::White);
 
     std::vector<sf::Vertex> vertexArray;
     vertexArray.resize(height * width);
 
-    sf::Vertex pixel(
-        sf::Vector2f(0,0),
-        sf::Color::Black
-    );
+    std::vector<std::thread> pool;
 
-    // std::cout << width << ", " << height << "\n";
-    for (int y = 0; y < height; ++y) {
+    auto worker = [&](int first, int second) {
+        for (int row = first; row < second; ++row) {
+            for (int i = 0; i < width; ++i) {
 
-        for (int x = 0; x < width; ++x) {
-        
-            auto primaryRay = this->camera.project(x, y);
+                auto ray = this->camera.project(i, row);
+                auto color = this->trace(ray);
 
-            auto color = this->trace(primaryRay);
-
-            // whack
-            pixel.position.x = x;
-            pixel.position.y = y;
-            pixel.color.r = sf::Uint8(color.x * 255);
-            pixel.color.g = sf::Uint8(color.y * 255);
-            pixel.color.b = sf::Uint8(color.z * 255);
-
-            vertexArray.push_back(pixel);
-
+                vertexArray[row * width + i] = sf::Vertex(
+                    sf::Vector2f(i, row),
+                    sf::Color(
+                        color.x * 255,
+                        color.y * 255,
+                        color.z * 255
+                    )
+                );
+            }
         }
+    };
 
+    for (
+        int first = height - rowsPerThread, second = height;
+        second > 0;
+        first -= rowsPerThread, second -= rowsPerThread
+    ) {
+        pool.push_back(std::thread(
+            worker,
+            (first > 0 ? first : 0),
+            second
+        ));
     }
 
+    for (auto& thread : pool)
+        thread.join();
+    
     window.draw(&vertexArray[0], vertexArray.size(), sf::Points);
 
     window.display();
