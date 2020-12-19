@@ -1,7 +1,7 @@
 #include "../../raytracing/Sphere.hpp"
 #include <cmath> 
-Sphere::Sphere(const Vec3& origin, double r, const Color& color)
-    : Shape(color), radius { r }, m_origin { origin }
+Sphere::Sphere(const Vec3& origin, double r, const Material& material)
+    : Shape(material), radius { r }, m_origin { origin }
 {
 }
 

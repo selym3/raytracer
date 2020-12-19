@@ -29,7 +29,7 @@ PPM_Engine::PPM_Engine(int w, int h, Camera camera, unsigned int toProduce) :
     Engine(
         w,
         h, 
-        Engine::Light(w>>1, 300, -5), 
+        Light(Vec3(0, 0, -5)), 
         camera
     ),
     toProduce { toProduce },

@@ -3,11 +3,11 @@
 #include <cmath>
 #include <thread>
 
-SFML_Engine::SFML_Engine(int w, int h, Camera camera, int rowsPerThread) : 
+SFML_Engine::SFML_Engine(int w, int h, Camera camera, Light light, int rowsPerThread) : 
     Engine(
         w, 
         h, 
-        Engine::Light(0, 0, 5),
+        light,
         camera
     ),
     window(
@@ -19,8 +19,8 @@ SFML_Engine::SFML_Engine(int w, int h, Camera camera, int rowsPerThread) :
 {
 }
 
-SFML_Engine::SFML_Engine(int w, int h, Camera camera) :
-    SFML_Engine(w, h, camera, w)
+SFML_Engine::SFML_Engine(int w, int h, Camera camera, Light light) :
+    SFML_Engine(w, h, camera, light, w)
 {
 }
 
@@ -61,7 +61,7 @@ void SFML_Engine::execute()
 
     // camera movement 
     // auto isMoving = (getKey(sf::Keyboard::W) - getKey(sf::Keyboard::S));
-    // camera.translation.z += 1;
+    camera.translation.z -= 0.2 * (getKey(sf::Keyboard::W) - getKey(sf::Keyboard::S));
 
     // rotating
     camera.pitch += 0.9 * (getKey(sf::Keyboard::A) - getKey(sf::Keyboard::D));

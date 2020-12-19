@@ -4,22 +4,22 @@
 #include "./RayIntersection.hpp"
 #include "./Ray.hpp"
 
-using Color = Vec3;
+#include "./Material.hpp"
 
-class RayIntersection;
+struct RayIntersection;
 
 class Shape
 {
 
-    Color m_color;
+    Material m_material;
 
 public:
-    Shape(const Color& color);
+    Shape(const Material& material);
     virtual ~Shape();
 
     virtual RayIntersection intersect(const Ray& ray) const = 0;
 
-    const Vec3& color() const;    
+    const Material& material() const;    
 };
 
 #endif

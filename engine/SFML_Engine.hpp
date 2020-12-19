@@ -8,8 +8,8 @@
 struct SFML_Engine : public Engine 
 {
 
-    SFML_Engine(int width, int height, Camera projector);
-    SFML_Engine(int width, int height, Camera projector, int rowsPerThread);
+    SFML_Engine(int width, int height, Camera projector, Light light);
+    SFML_Engine(int width, int height, Camera projector, Light light, int rowsPerThread);
     ~SFML_Engine()=default;
 
     bool isRunning() const override;

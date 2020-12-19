@@ -7,12 +7,12 @@
 #include "./projections/Camera.hpp"
 
 #include "../raytracing/Sphere.hpp"
-// #include "../raytracing/Shape.hpp"
+#include "../raytracing/Light.hpp"
+
 
 struct Engine
 {
     using ShapeType = Sphere;
-    using Light = Vec3;
 
     Engine(
         int width, 

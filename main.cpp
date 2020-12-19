@@ -14,13 +14,10 @@ int main(void)
 {
     // -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
-    constexpr int WIDTH  = 900;
-    constexpr int HEIGHT = 450;
+    constexpr int WIDTH  = 300;
+    constexpr int HEIGHT = 300;
 
-    // using EngineType = PPM_Engine;
-    using EngineType = SFML_Engine;
-
-    EngineType engine {
+    SFML_Engine engine {
         WIDTH,
         HEIGHT,
         Camera(
@@ -30,12 +27,16 @@ int main(void)
                 HEIGHT
             )
         ),
+        Light(
+            Vec3(-300, 600, 30)
+        ),
         1
     };
 
     engine
-        .addShape(Sphere(Vec3( 0, -2.5, -30), 4, Color(1, 0, 0)))
-        .addShape(Sphere(Vec3( 0, 0, -60), 12, Color(0, 1, 0)));
+        .addShape(Sphere(Vec3( 0, -2.5, -15), 4, Material(Color(1, 0, 0))))
+        .addShape(Sphere(Vec3( 0, 2.5, -45), 12, Material(Color(1,0,1))));
+        // .addShape(Sphere(Vec3( 0, -9000, 0), 9000 - 0.7, Material(Color(1,1,1))));
 
     std::cout << "Start rendering...\n";
 

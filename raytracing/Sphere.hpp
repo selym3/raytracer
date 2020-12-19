@@ -10,7 +10,7 @@ class Sphere : public Shape
     double radius;
 
 public:
-    Sphere(const Vec3& origin, double r, const Color& color);
+    Sphere(const Vec3& origin, double r, const Material& material);
     ~Sphere();
 
     RayIntersection intersect(const Ray& in) const;
