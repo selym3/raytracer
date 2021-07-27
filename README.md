@@ -2,6 +2,10 @@
 
 Raytracing implementation in C++
 
+## Note
+
+This code is the old version of this project
+
 ## TODO
 
 * Fix camera movemement the sfml renderer (does it even work)
