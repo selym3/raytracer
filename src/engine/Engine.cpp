@@ -49,14 +49,14 @@ Color Engine::trace(const Ray& in) const
     }
     
     
-    Vec3 shifted = nearest.hit + 1e-5 * nearest.normal;
+    Vec3 shifted = nearest.hit;// + 1e-5 * nearest.normal;
     Vec3 lightDirection = (this->light.position - shifted).normalized();
     Ray shadowRay(shifted, lightDirection);
     bool inShadow = false;
 
     for (const auto& shape : shapes) {
         auto tmp = shape.intersect(shadowRay);
-        if (tmp.intersected) {
+        if ((&shape != shapeHit) && tmp.intersected) {
             inShadow = true;
             break;
         }
@@ -65,19 +65,16 @@ Color Engine::trace(const Ray& in) const
 
     if (!inShadow) {
         Color illumination = 0;
-        auto mat = shapeHit->material();
+        const auto& mat = shapeHit->material();
 
         illumination += mat.ambient * light.material.ambient;
-
         illumination += mat.diffuse * light.material.diffuse * lightDirection.dot(nearest.normal);
 
-        /*
         auto h = (camera.translation - nearest.hit).normalized();
         h += lightDirection;
         h = h.normalized();
 
         illumination += mat.specular * light.material.specular * std::pow(nearest.normal.dot(h), mat.shininess / 4.0);
-        */
        
         illumination.x = illumination.x > 1 ? 1 : illumination.x < 0 ? 0 : illumination.x;
         illumination.y = illumination.y > 1 ? 1 : illumination.y < 0 ? 0 : illumination.y; 

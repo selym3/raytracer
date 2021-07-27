@@ -36,7 +36,7 @@ Ray Camera::project(int x, int y) const
     
     // then translate
     out.setOrigin(out.origin() + translation);
-    out.setDestination(out.destination() + translation);
+    out.setDestination(out.destination());
 
     return out;
 }

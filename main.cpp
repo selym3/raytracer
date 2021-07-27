@@ -14,7 +14,7 @@ int main(void)
 {
     // -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
-    constexpr int WIDTH  = 300;
+    constexpr int WIDTH  = 600;
     constexpr int HEIGHT = 300;
 
     SFML_Engine engine {
@@ -28,15 +28,15 @@ int main(void)
             )
         ),
         Light(
-            Vec3(-300, 600, 30)
+            Vec3(0, 600, 30)
         ),
         1
     };
 
     engine
         .addShape(Sphere(Vec3( 0, -2.5, -15), 4, Material(Color(1, 0, 0))))
-        .addShape(Sphere(Vec3( 0, 2.5, -45), 12, Material(Color(1,0,1))));
-        // .addShape(Sphere(Vec3( 0, -9000, 0), 9000 - 0.7, Material(Color(1,1,1))));
+        .addShape(Sphere(Vec3( 0, 2.5, -45), 12, Material(Color(1,0,1))))
+        .addShape(Sphere(Vec3( 0, -9000, 0), 9000 - 0.7, Material(Color(1,1,1))));
 
     std::cout << "Start rendering...\n";
 

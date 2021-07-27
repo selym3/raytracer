@@ -18,7 +18,7 @@ RayIntersection Sphere::intersect(const Ray& in) const
     
     auto t0 = tca - thc;
     auto t1 = tca + thc;
-    if (t0 < t1) t0 = t1;
+    if (t0 > t1) t0 = t1;
 
     auto hit = in.sample(t0);
     return RayIntersection(

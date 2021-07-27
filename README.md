@@ -9,6 +9,6 @@ Raytracing implementation in C++
 * rethink coordinate system and why the light vector is so weird
 * Refraction
 * Reflection
-* Abstraction for Rendering
 * Routine to reduce rays and interpolate
 * Anti-aliasing algorithms
+* Orthographic is not working

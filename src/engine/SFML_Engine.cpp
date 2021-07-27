@@ -58,10 +58,12 @@ void SFML_Engine::execute()
         std::cout << "---\n";
     }
 
-
     // camera movement 
     // auto isMoving = (getKey(sf::Keyboard::W) - getKey(sf::Keyboard::S));
-    camera.translation.z -= 0.2 * (getKey(sf::Keyboard::W) - getKey(sf::Keyboard::S));
+    Vec3 dir { 0, 0, 0.2 * (getKey(sf::Keyboard::W) - getKey(sf::Keyboard::S)) };
+    camera.translation += dir.rotate(camera.yaw, camera.pitch, camera.roll);
+    camera.translation.y += 0.2 * (getKey(sf::Keyboard::Q) - getKey(sf::Keyboard::E));
+
 
     // rotating
     camera.pitch += 0.9 * (getKey(sf::Keyboard::A) - getKey(sf::Keyboard::D));
