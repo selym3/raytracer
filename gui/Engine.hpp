@@ -120,7 +120,9 @@ public:
         buffer(window.getSize()),
         camera(width, height, 90.0)
     {
-        colliders.push_back(SphereCollider({0,0,+6}, 2));
+        colliders.push_back(SphereCollider({-3, 0, 6}, 2));
+        colliders.push_back(SphereCollider({+3, 0, 6}, 2));
+        colliders.push_back(PlaneCollider({0,-8,0}, {0,1,0}));
     }
 
     bool is_running() const 

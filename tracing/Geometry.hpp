@@ -34,7 +34,7 @@ using Collider = std::function<CollisionTest(const Ray&)>;
 // Sphere / Ray collision tester
 struct SphereCollider
 {
-    // Data necessary to do sphere/ray collisions
+    // Data to represent a sphere
     Vec3d center;
     double r;
 
@@ -77,7 +77,7 @@ struct SphereCollider
         // the quadratic formula, where discriminant can be 
         // used to see if any intersections at all. 
 
-        // Calculate discriminant
+        // Calculate discriminant (double)
         const auto discriminant = b*b - 4*a*c;
         
         if (discriminant < 0)
@@ -105,6 +105,63 @@ struct SphereCollider
 
         return Collision(t0, where, normal);
     }
+};
+
+// Plane/Ray Collision Tester
+struct PlaneCollider
+{
+    // Data to represent a plane
+    Vec3d point, normal;
+
+    // Create a plane collider
+    PlaneCollider(const Vec3d& point, const Vec3d& normal) :
+        point{point}, normal{!normal}
+    {
+    }
+
+    CollisionTest operator()(const Ray& ray) const
+    {
+        // Knowing that (A dot B) = 0 if A and B are perpendicular, 
+        // and that a plane is vector P away from the origin facing 
+        // unit vector N, 
+        // 
+        // (X - P) dot N = 0, where X is any point because any point
+        // on the plane will be perpendicular to the plane's normal
+        
+        // Knowing that a ray is X(t) = A + t*D, the intersection of a plane
+        // and ray becomes 
+        //  (X(t) - P) dot N = 0
+        //  (A + t*D) dot N = 0
+
+        const auto& D = ray.direction;
+
+        // Solving for t yields
+        //  ((t * D) dot N) + ((A - P) dot N) = 0
+        //  t = ((P - A) dot N) / (D dot N)
+        
+        const auto denominator = normal % D;
+
+        // Note that when the denominator (D dot N) approaches zero, 
+        // the plane and the ray perfectly coincide, so an epsilon should be used
+        // to handle this code
+
+        const static auto RAY_EPSILON = 1e-6;
+
+        // Reject rays that miss because they are parallel or facing the other way
+        if (denominator <= RAY_EPSILON) // <-- TODO: this is giving me a bug
+            return std::nullopt;
+        
+        const auto diff = point - ray.origin;
+        const auto t = (diff % normal) / denominator;
+
+        // Create a collision object
+        auto where = ray.sample(t);
+        const auto& n = normal; // <-- TODO: is this normal facing the right direction
+
+        return Collision(t, where, n);
+    }
+
+
 };
 
 #endif
