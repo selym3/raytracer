@@ -119,6 +119,11 @@ struct PlaneCollider
     {
     }
 
+    PlaneCollider(double offset, const Vec3d& normal) :
+        PlaneCollider(Vec3d(0, offset, 0), normal)
+    {
+    }
+
     CollisionTest operator()(const Ray& ray) const
     {
         // Knowing that (A dot B) = 0 if A and B are perpendicular, 
@@ -147,16 +152,24 @@ struct PlaneCollider
 
         const static auto RAY_EPSILON = 1e-6;
 
-        // Reject rays that miss because they are parallel or facing the other way
-        if (denominator <= RAY_EPSILON) // <-- TODO: this is giving me a bug
+        // Reject rays that miss because they are parallel to the plane (dot product is near 0)
+        if (std::abs(denominator) <= RAY_EPSILON)
             return std::nullopt;
         
         const auto diff = point - ray.origin;
         const auto t = (diff % normal) / denominator;
 
+        // Reject rays that are behind the origin
+        if (t < 0)
+            return std::nullopt;
+
         // Create a collision object
         auto where = ray.sample(t);
-        const auto& n = normal; // <-- TODO: is this normal facing the right direction
+
+        // TODO: The sign of the denominator can tell you where the ray is 
+        // looking at the plane from. For now, the normal is always facing the
+        // same direction
+        const auto& n = normal; 
 
         return Collision(t, where, n);
     }
