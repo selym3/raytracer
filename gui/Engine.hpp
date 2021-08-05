@@ -15,12 +15,24 @@ class Engine
 private:
     sf::RenderWindow window;
     Pixels buffer;
+    int samples_per_pixel;
 
 public:
     Camera camera;
     std::vector<Collider> colliders;
 
-    sf::Color getColor(const sf::Vector2<std::size_t>& pixel) const
+    template <typename V3>
+    static sf::Color toColor(const V3& v)
+    {
+        return sf::Color(
+            static_cast<sf::Uint8>(v.x),
+            static_cast<sf::Uint8>(v.y),
+            static_cast<sf::Uint8>(v.z)
+        );
+    }
+
+    template <typename Pixel>
+    Vec3d getColor(const Pixel& pixel) const
     {   
         // Camera ray
         auto ray = camera.get_ray(pixel);
@@ -49,7 +61,7 @@ public:
             auto n = nearest->normal;
             n+=1; n *= 0.5;
             n*=255;
-            return sf::Color(int(n.x), int(n.y), int(n.z));
+            return n;
         }
 
         // If there isn't, background color
@@ -57,24 +69,32 @@ public:
         Vec3d c1 = Vec3d(128, 128, 128),
               c2 = Vec3d(59, 59, 59);
 
-        // std::cout << ray.direction.y << "\n";
-
         auto c_mix = c1 * (1 - dy) + c2 * dy;
 
-        return sf::Color(int(c_mix.x), int(c_mix.y), int(c_mix.z));
-
+        return c_mix;
     }
 
 private:
 
     void updatePixels()
     {
-        sf::Vector2<std::size_t> pixel(0, 0);
+        auto pixel_increment = 1.0 / static_cast<double>(samples_per_pixel);
+        sf::Vector2<double> pixel(0, 0);
+        
         for (; pixel.y < buffer.get_height(); ++pixel.y)
         {
             for (pixel.x = 0; pixel.x < buffer.get_width(); ++pixel.x)
             {
-                buffer.set_color(pixel, getColor(pixel));
+                auto exact_x = pixel.x;
+                Vec3d color = 0;
+                for (int sample = 0; sample < samples_per_pixel; ++sample)
+                {
+                    color += getColor(pixel);
+                    pixel.x += pixel_increment;
+                }
+                pixel.x = exact_x;
+                
+                buffer.set_color(pixel, toColor(color/samples_per_pixel));
             }
         }
     }
@@ -111,14 +131,15 @@ private:
 
 public:
 
-    Engine(std::size_t width, std::size_t height) :
+    Engine(std::size_t width, std::size_t height, int samples_per_pixel = 1) :
         window(
             sf::VideoMode(width, height),
             "raytracer",
             sf::Style::None
         ),
         buffer(window.getSize()),
-        camera(width, height, 90.0)
+        camera(width, height, 90.0),
+        samples_per_pixel(samples_per_pixel)
     {
         colliders.push_back(SphereCollider({-3, 0, 6}, 2));
         colliders.push_back(SphereCollider({+3, 0, 6}, 2));
