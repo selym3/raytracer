@@ -68,8 +68,8 @@ public:
     {
         // Simple gradient to look nice
         auto dy = ray.direction.y;
-        Vec3d c1 = Vec3d(128, 128, 128), // light gray
-              c2 = Vec3d(59, 59, 59); // dark gray
+        Vec3d c1 = Vec3d(0, 0, 0),
+              c2 = Vec3d(0, 0, 0);
 
         auto c_mix = c1 * (1 - dy) + c2 * dy;
 
@@ -104,8 +104,14 @@ public:
         // If ray intersected a surface, continue ray tracing
         if (surface.has_value())
         {
-            Vec3d surface_color = getSurfaceColor(surface.value());
-            return surface_color;
+            const Vec3d& normal = surface->collision.normal,
+                where = surface->collision.where;
+
+            Vec3d result = surface->color;
+
+            Ray reflected = ray.reflect(where, normal, 0.01);
+
+            return result + 0.2 * raytrace(reflected, depth-1);
         }
 
         // If not, compute background color
@@ -129,7 +135,7 @@ private:
     {   
         // Primary camera ray
         auto ray = camera.get_ray(pixel);
-        return raytrace(ray, 1);
+        return raytrace(ray, 8);
     }
 
     void updatePixels()
@@ -205,7 +211,7 @@ public:
 
         shapes.push_back(Shape(SphereCollider({-(r + s), 0, z}, r), {64, 0, 0}));
         shapes.push_back(Shape(SphereCollider({+(r + s), 0, z}, r), {0, 0, 64}));
-        shapes.push_back(Shape(PlaneCollider({0,2 * -r,0}, {0,1,0}), {64, 64, 64}));
+        shapes.push_back(Shape(PlaneCollider({0,-r,0}, {1,1,0}), {64, 64, 64}));
     }
 
     bool is_running() const 

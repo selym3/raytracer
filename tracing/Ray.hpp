@@ -42,6 +42,15 @@ public:
         );
     }
 
+    Ray reflect(const Vec3d& surface, const Vec3d& normal, double eps = 1.0) const
+    {
+        // TODO: add formula later
+        return Ray(
+            surface,
+            direction - 2 * (normal % direction) * normal
+        ).fix(normal, eps);
+    }
+
 };
 
 #endif
