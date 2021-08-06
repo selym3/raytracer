@@ -19,7 +19,100 @@ private:
 
 public:
     Camera camera;
-    std::vector<Collider> colliders;
+    std::vector<Shape> shapes;
+
+    struct Light
+    {
+        Vec3d position, color;
+
+        Light(const Vec3d& position, const Vec3d& color) :
+            position{position}, color{color}
+        {
+        }
+    };
+
+    std::vector<Light> lights;
+
+
+    std::optional<Surface> getSurface(const Ray& ray, bool any = false) const
+    {
+        std::optional<Surface> nearest = std::nullopt;
+        for (const auto& shape : shapes)
+        {
+            std::optional<Surface> surface = shape.intersect(ray);
+            if (surface.has_value())
+            {
+                if (any) 
+                    return surface;
+
+                if (nearest.has_value())
+                    nearest = (surface->collision < nearest->collision) ? 
+                        surface : 
+                        nearest;
+
+                else
+                    nearest = surface;
+
+            }
+        }
+
+        return nearest;
+    }
+
+    bool hitsSurface(const Ray& ray) const
+    {
+        return getSurface(ray, true).has_value(); 
+    }
+
+    Vec3d getBackgroundColor(const Ray& ray) const
+    {
+        // Simple gradient to look nice
+        auto dy = ray.direction.y;
+        Vec3d c1 = Vec3d(128, 128, 128), // light gray
+              c2 = Vec3d(59, 59, 59); // dark gray
+
+        auto c_mix = c1 * (1 - dy) + c2 * dy;
+
+        return c_mix;
+    }
+
+    Vec3d getSurfaceColor(const Surface& surface) const
+    {
+        const Vec3d& normal = surface.collision.normal,
+            where = surface.collision.where;
+
+        Vec3d result = surface.color;
+        for (const Light& light : lights)
+        {
+            Ray light_ray = Ray(where, light.position - where).fix(normal, 0.01);
+            bool sees_light = !hitsSurface(light_ray);
+
+            if (sees_light)
+                result += light.color;
+        }
+        return result;
+    }
+
+    Vec3d raytrace(const Ray& ray, int depth) const
+    {
+        // If the ray can't bounce anymore, quit
+        if (0 >= depth) return Vec3d(0,0,0);
+
+        // Calculate where ray intersects scene
+        auto surface = getSurface(ray);
+
+        // If ray intersected a surface, continue ray tracing
+        if (surface.has_value())
+        {
+            Vec3d surface_color = getSurfaceColor(surface.value());
+            return surface_color;
+        }
+
+        // If not, compute background color
+        else return getBackgroundColor(ray);
+    }
+
+private:
 
     template <typename V3>
     static sf::Color toColor(const V3& v)
@@ -34,47 +127,10 @@ public:
     template <typename Pixel>
     Vec3d getColor(const Pixel& pixel) const
     {   
-        // Camera ray
+        // Primary camera ray
         auto ray = camera.get_ray(pixel);
-
-        // Test against every shape in the scene
-        CollisionTest nearest = std::nullopt;
-        for (const auto& collider : colliders)
-        {
-            auto collision = collider(ray);
-            if (collision.has_value())
-            {
-                if (nearest.has_value())
-                    nearest = (collision.value() < nearest.value()) ? 
-                        collision : 
-                        nearest;
-
-                else
-                    nearest = collision;
-
-            }
-        }
-
-        // If there is a shape in the scene,
-        if (nearest.has_value())
-        {
-            auto n = nearest->normal;
-            n+=1; n *= 0.5;
-            n*=255;
-            return n;
-        }
-
-        // If there isn't, background color
-        auto dy = ray.direction.y;
-        Vec3d c1 = Vec3d(128, 128, 128),
-              c2 = Vec3d(59, 59, 59);
-
-        auto c_mix = c1 * (1 - dy) + c2 * dy;
-
-        return c_mix;
+        return raytrace(ray, 1);
     }
-
-private:
 
     void updatePixels()
     {
@@ -141,9 +197,14 @@ public:
         camera(width, height, 90.0),
         samples_per_pixel(samples_per_pixel)
     {
-        colliders.push_back(SphereCollider({-3, 0, 6}, 2));
-        colliders.push_back(SphereCollider({+3, 0, 6}, 2));
-        colliders.push_back(PlaneCollider({0,-8,0}, {0,1,0}));
+        double z = 3;
+        double r = 1;
+
+        lights.push_back(Light({0, r*3, z}, Vec3d{249, 252, 71}/3.0));
+
+        shapes.push_back(Shape(SphereCollider({-r, 0, z}, r), {64, 0, 0}));
+        shapes.push_back(Shape(SphereCollider({+r, 0, z}, r), {0, 0, 64}));
+        shapes.push_back(Shape(PlaneCollider({0,2 * -r,0}, {0,1,0}), {64, 64, 64}));
     }
 
     bool is_running() const 
