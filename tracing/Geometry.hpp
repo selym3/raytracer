@@ -90,7 +90,7 @@ struct SphereCollider
         auto t1 = (-b + dsqrt) / (2 * a);
 
         // t1 is always greater than t0, so if it's behind the 
-        // camera, discard this ray
+        // origin, discard this ray
         if (t1 < 0) 
             return std::nullopt;
         
@@ -101,6 +101,9 @@ struct SphereCollider
 
         // Create a collision object to return
         auto where = ray.sample(t0);
+
+        // TODO: using the distance of where to the center, it can be determined
+        // if the origin is in the sphere so that the normal can be reversed
         auto normal = where - center;
 
         return Collision(t0, where, normal);
