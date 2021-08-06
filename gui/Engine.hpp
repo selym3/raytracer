@@ -21,17 +21,17 @@ public:
     Camera camera;
     std::vector<Shape> shapes;
 
-    struct Light
-    {
-        Vec3d position, color;
+    // struct Light
+    // {
+    //     Vec3d position, color;
 
-        Light(const Vec3d& position, const Vec3d& color) :
-            position{position}, color{color}
-        {
-        }
-    };
+    //     Light(const Vec3d& position, const Vec3d& color) :
+    //         position{position}, color{color}
+    //     {
+    //     }
+    // };
 
-    std::vector<Light> lights;
+    // std::vector<Light> lights;
 
 
     std::optional<Surface> getSurface(const Ray& ray, bool any = false) const
@@ -82,14 +82,14 @@ public:
             where = surface.collision.where;
 
         Vec3d result = surface.color;
-        for (const Light& light : lights)
-        {
-            Ray light_ray = Ray(where, light.position - where).fix(normal, 0.01);
-            bool sees_light = !hitsSurface(light_ray);
+        // for (const Light& light : lights)
+        // {
+        //     Ray light_ray = Ray(where, light.position - where).fix(normal, 0.01);
+        //     bool sees_light = !hitsSurface(light_ray);
 
-            if (sees_light)
-                result += light.color;
-        }
+        //     if (sees_light)
+        //         result += light.color;
+        // }
         return result;
     }
 
@@ -199,11 +199,12 @@ public:
     {
         double z = 3;
         double r = 1;
+        double s = 0.1;
 
-        lights.push_back(Light({0, r*3, z}, Vec3d{249, 252, 71}/3.0));
+        // lights.push_back(Light({0, r*3, z}, Vec3d{249, 252, 71}/3.0));
 
-        shapes.push_back(Shape(SphereCollider({-r, 0, z}, r), {64, 0, 0}));
-        shapes.push_back(Shape(SphereCollider({+r, 0, z}, r), {0, 0, 64}));
+        shapes.push_back(Shape(SphereCollider({-(r + s), 0, z}, r), {64, 0, 0}));
+        shapes.push_back(Shape(SphereCollider({+(r + s), 0, z}, r), {0, 0, 64}));
         shapes.push_back(Shape(PlaneCollider({0,2 * -r,0}, {0,1,0}), {64, 64, 64}));
     }
 
