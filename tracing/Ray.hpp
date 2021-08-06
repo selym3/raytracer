@@ -34,7 +34,13 @@ public:
         return origin + direction * t;
     }
 
-public:
+    Ray fix(const Vec3d& fix_direction, double eps) const
+    {
+        return Ray(
+            origin + fix_direction * eps,
+            direction
+        );
+    }
 
 };
 
