@@ -111,7 +111,7 @@ public:
     {
         // Simple gradient to look nice
         auto dy = ray.direction.y;
-        Vec3d c1 = Vec3d(0, 0, 144),
+        Vec3d c1 = Vec3d(144, 144, 0),
               c2 = Vec3d(255, 255, 255);
 
         auto c_mix = c1 * (1 - dy) + c2 * dy;
