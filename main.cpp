@@ -1,50 +1,16 @@
-#include "./engine/projections/Camera.hpp"
-#include "./engine/projections/Orthographic.hpp"
-#include "./engine/projections/Perspective.hpp"
-#include "./engine/projections/Projection.hpp"
-
-#include "./engine/PPM_Engine.hpp"
-#include "./engine/SFML_Engine.hpp"
-#include "./raytracing/Sphere.hpp"
-
 #include <iostream>
 
+#include "gui/Engine.hpp"
 
-int main(void)
+int main(int argc, char** argv)
 {
-    // -lsfml-window -lsfml-graphics -lsfml-system -pthread
 
-    constexpr int WIDTH  = 600;
-    constexpr int HEIGHT = 300;
+    Engine e(600, 600, 1);
 
-    SFML_Engine engine {
-        WIDTH,
-        HEIGHT,
-        Camera(
-            Perspective(
-                90, 
-                WIDTH, 
-                HEIGHT
-            )
-        ),
-        Light(
-            Vec3(0, 600, 30)
-        ),
-        1
-    };
-
-    engine
-        .addShape(Sphere(Vec3( 0, -2.5, -15), 4, Material(Color(1, 0, 0))))
-        .addShape(Sphere(Vec3( 0, 2.5, -45), 12, Material(Color(1,0,1))))
-        .addShape(Sphere(Vec3( 0, -9000, 0), 9000 - 0.7, Material(Color(1,1,1))));
-
-    std::cout << "Start rendering...\n";
-
-    while (engine.isRunning()) {
-        engine.execute();
+    while (e.is_running())
+    {
+        e.update();
     }
-
-    std::cout << "Done rendering..." << std::endl;
 
     return 0;
 }
