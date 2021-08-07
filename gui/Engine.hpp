@@ -10,6 +10,46 @@
 #include "../tracing/Shape.hpp"
 #include "../tracing/Camera.hpp"
 
+
+/////////////
+// https://stackoverflow.com/questions/2704521/generate-random-double-numbers-in-c
+#include <random>
+template<typename Numeric, typename Generator = std::mt19937>
+Numeric random(Numeric from, Numeric to)
+{
+    thread_local static Generator gen(std::random_device{}());
+
+    using dist_type = typename std::conditional
+    <
+        std::is_integral<Numeric>::value
+        , std::uniform_int_distribution<Numeric>
+        , std::uniform_real_distribution<Numeric>
+    >::type;
+
+    thread_local static dist_type dist;
+
+    return dist(gen, typename dist_type::param_type{from, to});
+}
+/////////////
+
+Vec3d random_in_sphere()
+{
+    // angles
+    double xy = random(-180.0, +180.0),
+           yz = random(-180.0, +180.0);
+    
+    // Rotations & Scaling
+    double x = random(0,1) * std::cos(yz) * std::sin(xy);
+    double y = random(0,1) * std::cos(yz) * std::cos(xy);
+    double z = random(0,1) * std::sin(yz);
+    
+    return Vec3d(x, y, z);
+}
+
+
+/////////////
+
+
 class Engine
 {
 private:
@@ -20,6 +60,9 @@ private:
 public:
     Camera camera;
     std::vector<Shape> shapes;
+
+    double fuzz = 0.0;
+    int max_depth = 3;
 
     // struct Light
     // {
@@ -68,8 +111,8 @@ public:
     {
         // Simple gradient to look nice
         auto dy = ray.direction.y;
-        Vec3d c1 = Vec3d(0, 0, 0),
-              c2 = Vec3d(0, 0, 0);
+        Vec3d c1 = Vec3d(0, 0, 144),
+              c2 = Vec3d(255, 255, 255);
 
         auto c_mix = c1 * (1 - dy) + c2 * dy;
 
@@ -110,8 +153,10 @@ public:
             Vec3d result = surface->color;
 
             Ray reflected = ray.reflect(where, normal, 0.01);
+            reflected.direction += fuzz * random_in_sphere();
+            reflected.direction = !reflected.direction;
 
-            return result + 0.2 * raytrace(reflected, depth-1);
+            return result + 0.5 * raytrace(reflected, depth-1);
         }
 
         // If not, compute background color
@@ -130,12 +175,12 @@ private:
         );
     }
 
-    template <typename Pixel>
-    Vec3d getColor(const Pixel& pixel) const
+    template <typename V3>
+    Vec3d getColor(const V3& pixel) const
     {   
         // Primary camera ray
         auto ray = camera.get_ray(pixel);
-        return raytrace(ray, 8);
+        return raytrace(ray, max_depth);
     }
 
     void updatePixels()
@@ -203,7 +248,7 @@ public:
         camera(width, height, 90.0),
         samples_per_pixel(samples_per_pixel)
     {
-        double z = 3;
+        double z = 4;
         double r = 1;
         double s = 0.1;
 
@@ -211,7 +256,7 @@ public:
 
         shapes.push_back(Shape(SphereCollider({-(r + s), 0, z}, r), {64, 0, 0}));
         shapes.push_back(Shape(SphereCollider({+(r + s), 0, z}, r), {0, 0, 64}));
-        shapes.push_back(Shape(PlaneCollider({0,-r,0}, {1,1,0}), {64, 64, 64}));
+        shapes.push_back(Shape(PlaneCollider({0, -(r + s),0}, {0,1,0}), {0, 64, 0}));
     }
 
     bool is_running() const 
