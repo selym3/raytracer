@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <vector>
+#include <cmath>
 
 #include <SFML/Graphics.hpp>
 
@@ -10,72 +11,21 @@
 #include "../tracing/Shape.hpp"
 #include "../tracing/Camera.hpp"
 
-
-/////////////
-// https://stackoverflow.com/questions/2704521/generate-random-double-numbers-in-c
-#include <random>
-template<typename Numeric, typename Generator = std::mt19937>
-Numeric random(Numeric from, Numeric to)
-{
-    thread_local static Generator gen(std::random_device{}());
-
-    using dist_type = typename std::conditional
-    <
-        std::is_integral<Numeric>::value
-        , std::uniform_int_distribution<Numeric>
-        , std::uniform_real_distribution<Numeric>
-    >::type;
-
-    thread_local static dist_type dist;
-
-    return dist(gen, typename dist_type::param_type{from, to});
-}
-/////////////
-
-Vec3d random_in_sphere()
-{
-    // angles
-    double xy = random(-180.0, +180.0),
-           yz = random(-180.0, +180.0);
-    
-    // Rotations & Scaling
-    double x = random(0,1) * std::cos(yz) * std::sin(xy);
-    double y = random(0,1) * std::cos(yz) * std::cos(xy);
-    double z = random(0,1) * std::sin(yz);
-    
-    return Vec3d(x, y, z);
-}
-
-
-/////////////
-
-
 class Engine
 {
 private:
     sf::RenderWindow window;
     Pixels buffer;
-    int samples_per_pixel;
 
 public:
     Camera camera;
     std::vector<Shape> shapes;
+    LightSet lights;
 
-    double fuzz = 0.0;
-    int max_depth = 3;
+    Vec3d bg_color;
 
-    // struct Light
-    // {
-    //     Vec3d position, color;
-
-    //     Light(const Vec3d& position, const Vec3d& color) :
-    //         position{position}, color{color}
-    //     {
-    //     }
-    // };
-
-    // std::vector<Light> lights;
-
+    int samples_per_pixel;
+    int max_depth = 6;
 
     std::optional<Surface> getSurface(const Ray& ray, bool any = false) const
     {
@@ -107,34 +57,6 @@ public:
         return getSurface(ray, true).has_value(); 
     }
 
-    Vec3d getBackgroundColor(const Ray& ray) const
-    {
-        // Simple gradient to look nice
-        auto dy = ray.direction.y;
-        Vec3d c1 = Vec3d(144, 144, 0),
-              c2 = Vec3d(255, 255, 255);
-
-        auto c_mix = c1 * (1 - dy) + c2 * dy;
-
-        return c_mix;
-    }
-
-    Vec3d getSurfaceColor(const Surface& surface) const
-    {
-        const Vec3d& normal = surface.collision.normal,
-            where = surface.collision.where;
-
-        Vec3d result = surface.color;
-        // for (const Light& light : lights)
-        // {
-        //     Ray light_ray = Ray(where, light.position - where).fix(normal, 0.01);
-        //     bool sees_light = !hitsSurface(light_ray);
-
-        //     if (sees_light)
-        //         result += light.color;
-        // }
-        return result;
-    }
 
     Vec3d raytrace(const Ray& ray, int depth) const
     {
@@ -147,20 +69,16 @@ public:
         // If ray intersected a surface, continue ray tracing
         if (surface.has_value())
         {
-            const Vec3d& normal = surface->collision.normal,
-                where = surface->collision.where;
-
-            Vec3d result = surface->color;
-
-            Ray reflected = ray.reflect(where, normal, 0.01);
-            reflected.direction += fuzz * random_in_sphere();
-            reflected.direction = !reflected.direction;
-
-            return result + 0.5 * raytrace(reflected, depth-1);
+            auto surface_color = surface->getSurfaceColor(ray, lights);
+            
+            for (const Ray& ray : surface_color.rays)
+                surface_color.color += (surface_color.absorption * raytrace(ray, depth - 1));
+            
+            return surface_color.color;
         }
 
         // If not, compute background color
-        else return getBackgroundColor(ray);
+        else return bg_color;
     }
 
 private:
@@ -238,25 +156,25 @@ private:
 
 public:
 
-    Engine(std::size_t width, std::size_t height, int samples_per_pixel = 1) :
+    Engine(
+        std::size_t width, std::size_t height, 
+        const Camera& camera, const Vec3d& bg_color, 
+        const std::vector<Shape>& shapes, const LightSet& lights, 
+        int max_depth, int samples_per_pixel
+    ) :
         window(
             sf::VideoMode(width, height),
             "raytracer",
             sf::Style::None
         ),
         buffer(window.getSize()),
-        camera(width, height, 90.0),
-        samples_per_pixel(samples_per_pixel)
+        camera(camera),
+        shapes(shapes),
+        lights(lights),
+        max_depth(max_depth),
+        samples_per_pixel(samples_per_pixel),
+        bg_color(bg_color)
     {
-        double z = 4;
-        double r = 1;
-        double s = 0.1;
-
-        // lights.push_back(Light({0, r*3, z}, Vec3d{249, 252, 71}/3.0));
-
-        shapes.push_back(Shape(SphereCollider({-(r + s), 0, z}, r), {64, 0, 0}));
-        shapes.push_back(Shape(SphereCollider({+(r + s), 0, z}, r), {0, 0, 64}));
-        shapes.push_back(Shape(PlaneCollider({0, -(r + s),0}, {0,1,0}), {0, 64, 0}));
     }
 
     bool is_running() const 
