@@ -5,15 +5,21 @@
 
 #include "Ray.hpp"
 #include "Geometry.hpp"
+#include "Material.hpp"
 
 struct Surface
 {
-    Vec3d color;
+    Material material;
     Collision collision;
 
-    Surface(const Vec3d& color, const Collision& collision) : 
-        color{color}, collision{collision}
+    Surface(const Material& material, const Collision& collision) : 
+        material{material}, collision{collision}
     {
+    }
+
+    SurfaceColor getSurfaceColor(const Ray& incoming, const LightSet& lightset) const
+    {
+        return material(incoming, collision, lightset);
     }
 };
 
@@ -22,10 +28,10 @@ struct Shape
     // Data & Constructors
 
     Collider collider;
-    Vec3d color;
+    Material material;
 
-    Shape(const Collider& collider, const Vec3d& color) : 
-        collider { collider }, color { color }
+    Shape(const Collider& collider, const Material& material) : 
+        collider { collider }, material { material }
     {
     }
 
@@ -40,7 +46,7 @@ public:
             return std::nullopt;
 
         Surface surface(
-            color,
+            material,
             collision.value()
         );
 
