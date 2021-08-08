@@ -102,8 +102,8 @@ struct SphereCollider
         // Create a collision object to return
         auto where = ray.sample(t0);
 
-        // TODO: using the distance of where to the center, it can be determined
-        // if the origin is in the sphere so that the normal can be reversed
+        // TODO: using the dot product with the ray direction, it can be
+        // determined if the normal is facing away / towards the camera
         auto normal = where - center;
 
         return Collision(t0, where, normal);
@@ -169,9 +169,8 @@ struct PlaneCollider
         // Create a collision object
         auto where = ray.sample(t);
 
-        // TODO: The sign of the denominator can tell you where the ray is 
-        // looking at the plane from. For now, the normal is always facing the
-        // same direction
+        // TODO: using the dot product with the ray direction, it can be
+        // determined if the normal is facing away / towards the camera
         const auto& n = normal; 
 
         return Collision(t, where, n);
